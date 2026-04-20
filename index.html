@@ -490,7 +490,13 @@ function chooseBreakLength(words, startIndex, minWords, maxWords, options) {
     }
 
     if (punctuationType === "comma" && options.preferPunctuation && options.preferComma && bestComma === null) {
-      bestComma = len;
+      // 쉼표 분리 조건 강화
+      const beforeWords = words.slice(startIndex, idx + 1);
+      const afterWords = words.slice(idx + 1);
+
+      if (beforeWords.length >= 2 && afterWords.length >= 2) {
+        bestComma = len;
+      }
     }
 
     if (nextStartsBeat && len >= minWords) {
