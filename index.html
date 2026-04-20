@@ -45,13 +45,13 @@
     line-height: 1.05;
     letter-spacing: -0.03em;
   }
-.subtitle {
-  margin: 10px 0 0;
-  color: var(--sub);
-  line-height: 1.7;
-  font-size: 15px;
-  max-width: 780px;
-}
+  .subtitle {
+                margin: 10px 0 0;
+    color: var(--sub);
+    line-height: 1.7;
+    font-size: 15px;
+    max-width: 780px;
+  }
   .badge {
     display: inline-flex;
     align-items: center;
@@ -63,8 +63,7 @@
     color: var(--sub);
     font-size: 13px;
     box-shadow: var(--shadow);
-    white-space: nowrap;
-  }
+      }
   .panel {
     background: var(--card);
     backdrop-filter: blur(8px);
@@ -253,6 +252,36 @@
       width: 100%;
     }
   }
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 220px;
+  background-color: #111827;
+  color: #fff;
+  text-align: left;
+  border-radius: 8px;
+  padding: 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.tooltip:hover .tooltiptext,
+.tooltip:active .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
 </style>
 </head>
 <body>
@@ -260,7 +289,10 @@
     <div class="hero">
       <div>
         <h1 class="title">Bubblecut</h1>
-        <p class="subtitle">말풍선 텍스트 정리 도구. 번호 삭제, 조건 필터링, 문장부호 우선 분리, 최대 줄 수 기준 말풍선 분리를 한 번에 처리합니다. 클립스튜디오의 스토리 에디터에 곧바로 붙여넣어 사용할 수 있습니다. 결과물을 직접 수정하는 것을 권장합니다.</p>
+        <p class="subtitle">작가용 말풍선 텍스트 정리 도구. 번호 삭제, 조건 필터링, 문장부호 우선 분리
+<span class="tooltip">ⓘ
+  <span class="tooltiptext">쉼표와 마침표 등을 기준으로 자연스럽게 말풍선을 나눕니다.</span>
+</span>, 최대 줄 수 기준 말풍선 분리를 한 번에 처리합니다.</p>
       </div>
           </div>
 
@@ -274,10 +306,16 @@
         </div>
 
         <div class="row">
-          <label class="chip"><input type="checkbox" id="keepQuotedOnly"> 따옴표가 들어간 줄만 남기기</label>
-          <label class="chip"><input type="checkbox" id="keepPrefixOnly"> 특정 텍스트로 시작하는 줄만 남기기</label>
+          <label class="chip"><input type="checkbox" id="keepQuotedOnly"> 따옴표가 들어간 줄만 남기고 따옴표 제거
+<span class="tooltip">ⓘ
+  <span class="tooltiptext">따옴표가 포함된 줄만 남기고 결과에서는 따옴표 문자를 제거합니다.</span>
+</span></label>
+          <label class="chip"><input type="checkbox" id="keepPrefixOnly"> 특정 텍스트가 포함된 줄 삭제
+<span class="tooltip">ⓘ
+  <span class="tooltiptext">입력한 텍스트가 포함된 줄은 결과에서 삭제됩니다.</span>
+</span></label>
           <div class="field">
-            시작 텍스트
+            포함 텍스트
             <input type="text" id="prefixText" placeholder="예: - / + / *" />
           </div>
         </div>
@@ -288,7 +326,10 @@
             <input type="number" id="maxLines" value="4" min="1" max="10" onchange="resetLineRulesToDefault()">
             줄
           </div>
-          <label class="chip"><input type="checkbox" id="preferPunctuation" checked> 문장부호 우선 분리</label>
+          <label class="chip"><input type="checkbox" id="preferPunctuation" checked> 문장부호 우선 분리
+<span class="tooltip">ⓘ
+  <span class="tooltiptext">쉼표와 마침표 등을 기준으로 자연스럽게 말풍선을 나눕니다.</span>
+</span></label>
           <label class="chip"><input type="checkbox" id="preferComma" checked> 쉼표(,) 우선 분리 포함</label>
           
         </div>
@@ -354,9 +395,13 @@ function hasQuotes(line) {
   return /["“”'‘’]/.test(line);
 }
 
-function startsWithPrefix(line, prefix) {
-  if (!prefix) return true;
-  return line.trimStart().startsWith(prefix);
+function includesText(line, needle) {
+  if (!needle) return false;
+  return line.indexOf(needle) !== -1;
+}
+
+function stripQuotes(line) {
+  return line.replace(/["“”'‘’]/g, "");
 }
 
 function buildDefaultRules(maxLines) {
@@ -558,8 +603,18 @@ function processText() {
       continue;
     }
 
+    const filterText = (prefixText || "").trim();
+
     if (keepQuotedOnly && !hasQuotes(line)) continue;
-    if (keepPrefixOnly && !startsWithPrefix(line, prefixText)) continue;
+    if (keepPrefixOnly && filterText && includesText(line, filterText)) continue;
+
+    if (keepQuotedOnly) {
+      line = stripQuotes(line);
+    }
+
+    // speaker name 제거 (예: 아리: )
+    line = line.replace(/^.*?:\s*/, "");
+    line = line.replace(/\s{2,}/g, " ").trim();
 
     keptLines.push(line);
   }
