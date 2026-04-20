@@ -173,7 +173,7 @@
   }
   textarea {
     width: 100%;
-    min-height: 560px;
+    min-height: 370px;
     resize: vertical;
     border: 1px solid var(--line);
     border-radius: 20px;
@@ -320,7 +320,7 @@
         <div class="row">
           <div class="field">
             말풍선 최대 줄 수
-            <input type="number" id="maxLines" value="4" min="1" max="10" onchange="resetLineRulesToDefault()">
+            <input type="number" id="maxLines" value="4" min="1" max="10" onchange="renderLineRules(true)">
             줄
           </div>
           <label class="chip"><input type="checkbox" id="preferPunctuation" checked> 문장부호 우선 분리
@@ -415,18 +415,27 @@ function buildDefaultRules(maxLines) {
   return rules;
 }
 
-function renderLineRules() {
+function renderLineRules(preserveValues = false) {
   let maxLines = parseInt(document.getElementById("maxLines").value, 10);
-  if (isNaN(maxLines) || maxLines < 1) maxLines = 3;
+  if (isNaN(maxLines) || maxLines < 1) maxLines = 4;
   if (maxLines > 10) maxLines = 10;
   document.getElementById("maxLines").value = maxLines;
 
   const wrap = document.getElementById("lineRules");
   const defaults = buildDefaultRules(maxLines);
+
+  let existingRules = [];
+  if (preserveValues) {
+    existingRules = getLineRules();
+  }
+
   wrap.innerHTML = "";
 
   for (let i = 1; i <= maxLines; i++) {
-    const saved = defaults[i - 1];
+    const saved = preserveValues && existingRules[i - 1]
+      ? existingRules[i - 1]
+      : defaults[i - 1];
+
     const card = document.createElement("div");
     card.className = "line-rule";
     card.innerHTML = `
@@ -443,7 +452,7 @@ function renderLineRules() {
 }
 
 function resetLineRulesToDefault() {
-  renderLineRules();
+  renderLineRules(false);
 }
 
 function getLineRules() {
@@ -670,7 +679,7 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove("show"), 1200);
 }
 
-renderLineRules();
+renderLineRules(false);
 </script>
 </body>
 </html>
