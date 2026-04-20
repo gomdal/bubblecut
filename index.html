@@ -328,7 +328,8 @@
   <span class="tooltiptext">쉼표와 마침표 등을 기준으로 자연스럽게 말풍선을 나눕니다.</span>
 </span></label>
           <label class="chip"><input type="checkbox" id="preferComma" checked> 쉼표(,) 우선 분리 포함</label>
-          
+           <button class="secondary" type="button" onclick="resetLineRulesToDefault()">어절 설정 초기화</button>
+</div>
         </div>
 
         <div>
@@ -453,6 +454,7 @@ function renderLineRules(preserveValues = false) {
 
 function resetLineRulesToDefault() {
   renderLineRules(false);
+ 
 }
 
 function getLineRules() {
